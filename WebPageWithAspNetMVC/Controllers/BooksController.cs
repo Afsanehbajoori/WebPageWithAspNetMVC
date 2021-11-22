@@ -70,7 +70,7 @@ namespace WebPageWithAspNetMVC.Controllers
                 string filName = Path.GetFileNameWithoutExtension(book.ImageFile.FileName);
                 string extention = Path.GetExtension(book.ImageFile.FileName);
                 book.ImageName = filName + DateTime.Now.ToString("yymmssffff") + extention;
-                string path = Path.Combine(wwwRootPath + "/Image/", filName);
+                string path = Path.Combine(wwwRootPath + "/image/", filName);
                 using (var fileStream = new FileStream(path, FileMode.Create))
                 {
                     await book.ImageFile.CopyToAsync(fileStream);
@@ -159,8 +159,20 @@ namespace WebPageWithAspNetMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+
+
             var book = await _context.Book.FindAsync(id);
-            _context.Book.Remove(book);
+
+            //delete image from wwwroot/image
+            var imagePath = Path.Combine(_hostEnvirenment.WebRootPath, "image", book.ImageName);
+            if (System.IO.File.Exists(imagePath))
+            {
+                System.IO.File.Delete(imagePath);
+            }
+                
+
+            ////delete record
+          _context.Book.Remove(book);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
